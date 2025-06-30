@@ -1,17 +1,18 @@
 /**
-  ******************************************************************************
-  * @file    main.c
-  * @author  Ac6
-  * @version V1.0
-  * @date    01-December-2013
-  * @brief   Default main function.
-  ******************************************************************************
+	******************************************************************************
+	* @file    main.c
+	* @author  Ac6
+	* @version V1.0
+	* @date    01-December-2013
+	* @brief   Default main function.
+	******************************************************************************
 */
 
 
 #include "lvgl.h"
 #include "app_hal.h"
 #include <stdio.h>
+#include "instrument.h"
 
 #include "demos/lv_demos.h"
 
@@ -21,10 +22,10 @@ int main(void)
 
 	hal_setup();
 
-  lv_log("Hello %s\n", "World");
-  fflush(NULL);
+	create_instrument();
 
-  lv_demo_widgets();
+	lv_log("Hello %s\n", "World");
+	fflush(NULL);
 
 	hal_loop();
 }

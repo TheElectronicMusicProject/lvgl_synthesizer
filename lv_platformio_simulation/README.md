@@ -1,3 +1,23 @@
+# My TODO list
+
+Under my TODO list there are the original instrucitons.
+Here I track the functionalities I want to implement and I've already
+implemented.
+Every further suggestion is appreciated!
+
+- [x] Keys
+- [x] Play sound (done with play command for Linux)
+- [x] Different sound frequency for each key
+- [ ] Keys color
+- [ ] ASDR control
+- [ ] Selectable waveform
+- [ ] Further effects .... WIP
+
+
+This is the current graphics!
+![Keyboard on simulator](./img/graphics_status.png)
+
+
 # Run LittlevGL via PlatformIO
 
 [![CI](https://github.com/lvgl/lv_platformio/workflows/CI/badge.svg?branch=master)](https://github.com/lvgl/lv_platformio/actions)

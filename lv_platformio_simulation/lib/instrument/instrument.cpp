@@ -12,14 +12,14 @@ on_button_cb (lv_event_t * p_event)
     lv_obj_t * p_btn = lv_event_get_target_obj(p_event);
     key_number_t * p_active_key = (key_number_t *) lv_event_get_user_data(p_event);
     char cmd_array[60] = {0};
-    double key_num = pow(2.0, ((double) p_active_key->num) / 12.0) * 440.0;   /* Align to middle C */
+    double key_freq = pow(2.0, ((double) p_active_key->num - 9.0) / 12.0) * 440.0;   /* Align to middle C */
     
     switch (p_event->code)
     {
         case LV_EVENT_PRESSED:
         {
-            lv_log("PRESSED %d\n", key_num);
-            sprintf(cmd_array, "play -V1 -r 48000 -n synth sin %f trim 0 0.5 &", key_num);
+            lv_log("PRESSED %f\n", key_freq);
+            sprintf(cmd_array, "play -V1 -r 48000 -n synth sin %f trim 0 0.5 &", key_freq);
             system(cmd_array);
             fflush(NULL);
         }

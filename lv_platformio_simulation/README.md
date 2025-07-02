@@ -1,6 +1,6 @@
 # My TODO list
 
-Under my TODO list there are the original instrucitons.
+Under my TODO list there are the original instructions.
 Here I track the functionalities I want to implement and I've already
 implemented.
 Every further suggestion is appreciated!

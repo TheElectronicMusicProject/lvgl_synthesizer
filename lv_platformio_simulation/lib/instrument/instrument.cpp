@@ -2,7 +2,10 @@
 #include "lvgl.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
+
+#define INSTR_NUM_KEY   (13)
 
 static void on_button_cb(lv_event_t * p_event);
 
@@ -43,15 +46,25 @@ void
 create_instrument (void)
 {
     int32_t idx = 0;
-    static key_number_t piano_key[14] = {0};
-    static lv_coord_t col_dsc[14] = {0};
+    key_number_t * p_key_num = NULL;
+    static key_number_t piano_key[INSTR_NUM_KEY] = {0};
+    static lv_coord_t col_dsc[INSTR_NUM_KEY] = {0};
+    static lv_style_t main_style{0};
+    static lv_style_t upper_style{0};
+    static lv_style_t white_key_style{0};
+    static lv_style_t black_key_style{0};
+    const char key_name_list[INSTR_NUM_KEY][3] = {"C", "C#", "D", "D#", "E",
+                                                  "F", "F#", "G", "G#", "A",
+                                                  "A#", "B", "C"};
 
-    for (idx = 0; idx < 13; ++idx)
+    for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
     {
         col_dsc[idx] = LV_GRID_FR(1);
+        p_key_num = &piano_key[idx];
+        strncpy(p_key_num->key_name, key_name_list[idx], 3);
     }
 
-    col_dsc[13] = LV_GRID_TEMPLATE_LAST;
+    col_dsc[INSTR_NUM_KEY] = LV_GRID_TEMPLATE_LAST;
 
     static lv_coord_t row_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1),
                                    LV_GRID_TEMPLATE_LAST};
@@ -63,20 +76,49 @@ create_instrument (void)
     // ROW 0
     //
     lv_obj_t * p_obj = lv_obj_create(p_screen);
-    lv_obj_set_grid_cell(p_obj, LV_GRID_ALIGN_STRETCH, 0, 13, LV_GRID_ALIGN_STRETCH, 0, 1);
+    lv_obj_set_grid_cell(p_obj, LV_GRID_ALIGN_STRETCH, 0, INSTR_NUM_KEY, LV_GRID_ALIGN_STRETCH, 0, 1);
+
+    lv_style_init(&main_style);
+    lv_style_set_bg_color(&main_style, lv_palette_main(LV_PALETTE_LIGHT_GREEN));
+    lv_obj_add_style(p_screen, &main_style, LV_PART_MAIN);
+
+    lv_style_init(&upper_style);
+    lv_style_set_bg_color(&upper_style, lv_palette_main(LV_PALETTE_GREY));
+    lv_obj_add_style(p_obj, &upper_style, LV_PART_MAIN);
+
+    lv_style_init(&white_key_style);
+    lv_style_set_bg_color(&white_key_style, {0xFF, 0xFF, 0xFF});
+
+    lv_style_init(&black_key_style);
+    lv_style_set_bg_color(&black_key_style, lv_palette_main(LV_PALETTE_NONE));
 
     // ROW 1
     //
     lv_obj_t * p_btn = NULL;
 
-    for (idx = 0; idx < 13; ++idx)
+    for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
     {
         p_btn = lv_button_create(p_screen);
         lv_obj_set_grid_cell(p_btn, LV_GRID_ALIGN_STRETCH, idx, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
         piano_key[idx].num = idx;
+        lv_obj_t * p_key_label = lv_label_create(p_btn);
+        p_key_num = &piano_key[idx];
+        lv_label_set_text(p_key_label, p_key_num->key_name);
 
         lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_PRESSED, &piano_key[idx]);
         lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_RELEASED, &piano_key[idx]);
+
+
+        if ((1 == idx) || (3 == idx) || (6 == idx) || (8 == idx) || (10 == idx))
+        {
+            lv_obj_add_style(p_btn, &black_key_style, LV_PART_MAIN);
+            lv_obj_set_style_text_color(p_key_label, {0xFF, 0xFF, 0xFF}, 0);
+        }
+        else
+        {
+            lv_obj_add_style(p_btn, &white_key_style, LV_PART_MAIN);
+            lv_obj_set_style_text_color(p_key_label, {0x0, 0x0, 0x0}, 0);
+        }
     }
 
 }   /* create_instrument() */

@@ -8,7 +8,9 @@ Every further suggestion is appreciated!
 - [x] Keys
 - [x] Play sound (done with play command for Linux)
 - [x] Different sound frequency for each key
-- [ ] Keys color
+- [x] Keys color
+- [ ] Key names
+- [ ] First pressed key doesn't emit any sound
 - [ ] ASDR control
 - [ ] Selectable waveform
 - [ ] Further effects .... WIP

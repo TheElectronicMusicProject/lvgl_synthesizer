@@ -5,6 +5,7 @@
 typedef struct key_number_t
 {
     uint8_t num;
+    char key_name[3];
 } key_number_t;
 
 

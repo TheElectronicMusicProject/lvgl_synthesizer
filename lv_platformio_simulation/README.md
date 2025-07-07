@@ -9,10 +9,10 @@ Every further suggestion is appreciated!
 - [x] Play sound (done with play command for Linux)
 - [x] Different sound frequency for each key
 - [x] Keys color
-- [ ] Volume regulation (knob)
-- [ ] Key names
-- [ ] First pressed key doesn't emit any sound
-- [ ] ASDR control
+- [x] Volume regulation (knob)
+- [x] Key names
+- [ ] First pressed key doesn't emit any sound (BUG)
+- [ ] ADSR control
 - [ ] Selectable waveform
 - [ ] Further effects .... WIP
 

@@ -5,8 +5,6 @@
 #include <string.h>
 #include <math.h>
 
-#define INSTR_NUM_KEY   (13)
-
 static void on_button_cb(lv_event_t * p_event);
 static void on_knob_cb(lv_event_t * p_event);
 
@@ -27,8 +25,10 @@ on_button_cb (lv_event_t * p_event)
         case LV_EVENT_PRESSED:
         {
             lv_log("PRESSED %f\n", key_freq);
-            sprintf(cmd_array, "play -V1 -r 48000 -n synth sin %f trim 0 0.5 vol %f&",
-                    key_freq, (double) g_volume / 1000);
+            sprintf(cmd_array,
+                    "play -V1 -r 48000 -n synth sin %f trim 0 0.5 vol %f&",
+                    key_freq, (double) g_volume / 100);
+            lv_log("## cmd: %s", cmd_array);
             system(cmd_array);
             fflush(NULL);
         }
@@ -71,12 +71,20 @@ on_knob_cb (lv_event_t * p_event)
     
 }   /* on_knob_cb() */
 
+uint8_t
+init_instrument (instrument_t * p_instr)
+{
+    p_instr->prop.volume = 100;
+    p_instr->q_key_press = 0;
+
+    return (1);
+}   /* init_instrument() */
+
 void
-create_instrument (void)
+create_instrument (instrument_t * p_instr)
 {
     int32_t idx = 0;
     key_number_t * p_key_num = NULL;
-    static key_number_t piano_key[INSTR_NUM_KEY] = {0};
     static lv_coord_t col_dsc[INSTR_NUM_KEY] = {0};
     static lv_style_t main_style{0};
     static lv_style_t upper_style{0};
@@ -89,14 +97,14 @@ create_instrument (void)
     for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
     {
         col_dsc[idx] = LV_GRID_FR(1);
-        p_key_num = &piano_key[idx];
+        p_key_num = &p_instr->key[idx];
         strncpy(p_key_num->key_name, key_name_list[idx], 3);
     }
 
     col_dsc[INSTR_NUM_KEY] = LV_GRID_TEMPLATE_LAST;
 
-    static lv_coord_t row_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1),
-                                   LV_GRID_TEMPLATE_LAST};
+    static lv_coord_t row_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+                                   LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
 
     lv_obj_t * p_screen(lv_screen_active());
     lv_obj_set_grid_dsc_array(p_screen, col_dsc, row_dsc);
@@ -106,7 +114,7 @@ create_instrument (void)
     //
     lv_obj_t * p_first_row = lv_obj_create(p_screen);
     lv_obj_set_grid_cell(p_first_row, LV_GRID_ALIGN_STRETCH, 0, INSTR_NUM_KEY,
-                         LV_GRID_ALIGN_STRETCH, 0, 1);
+                         LV_GRID_ALIGN_STRETCH, 0, 2);
 
     // Style for Row 0.
     //
@@ -127,7 +135,8 @@ create_instrument (void)
     // Knob inside Row 0.
     //
     lv_obj_t * p_knob_label = lv_label_create(p_first_row);
-    lv_label_set_text(p_knob_label, "0%");
+    lv_label_set_text(p_knob_label, "100%");
+    lv_obj_set_align(p_knob_label, LV_ALIGN_CENTER);
     
     lv_obj_t * p_knob = lv_arc_create(p_first_row);
     lv_obj_center(p_knob);
@@ -145,17 +154,17 @@ create_instrument (void)
         // Keyboard made of buttons.
         //
         p_btn = lv_button_create(p_screen);
-        lv_obj_set_grid_cell(p_btn, LV_GRID_ALIGN_STRETCH, idx, 1,
-                             LV_GRID_ALIGN_STRETCH, 1, 1);
-        piano_key[idx].num = idx;
+
+        p_instr->key[idx].num = idx;
         lv_obj_t * p_key_label = lv_label_create(p_btn);
-        p_key_num = &piano_key[idx];
+        p_key_num = &p_instr->key[idx];
         lv_label_set_text(p_key_label, p_key_num->key_name);
+        lv_obj_set_align(p_key_label, LV_ALIGN_CENTER);
 
         lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_PRESSED,
-                            &piano_key[idx]);
+                            p_key_num);
         lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_RELEASED,
-                            &piano_key[idx]);
+                            p_key_num);
         
         // Style for Row 1.
         //
@@ -163,11 +172,15 @@ create_instrument (void)
         {
             lv_obj_add_style(p_btn, &black_key_style, LV_PART_MAIN);
             lv_obj_set_style_text_color(p_key_label, {0xFF, 0xFF, 0xFF}, 0);
+            lv_obj_set_grid_cell(p_btn, LV_GRID_ALIGN_STRETCH, idx, 1,
+                                 LV_GRID_ALIGN_STRETCH, 2, 1);
         }
         else
         {
             lv_obj_add_style(p_btn, &white_key_style, LV_PART_MAIN);
             lv_obj_set_style_text_color(p_key_label, {0x0, 0x0, 0x0}, 0);
+            lv_obj_set_grid_cell(p_btn, LV_GRID_ALIGN_STRETCH, idx, 1,
+                                 LV_GRID_ALIGN_STRETCH, 2, 2);
         }
     }
 

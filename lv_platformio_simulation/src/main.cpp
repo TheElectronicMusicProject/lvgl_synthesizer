@@ -22,7 +22,15 @@ int main(void)
 
 	hal_setup();
 
-	create_instrument();
+	instrument_t my_piano = {0};
+	uint8_t ret = init_instrument(&my_piano);
+
+	if (0 == ret)
+	{
+		exit(EXIT_FAILURE);
+	}
+
+	create_instrument(&my_piano);
 
 	lv_log("Hello %s\n", "World");
 	fflush(NULL);

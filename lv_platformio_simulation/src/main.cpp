@@ -16,7 +16,8 @@
 
 #include "demos/lv_demos.h"
 
-int main(void)
+int
+main (void)
 {
 	lv_init();
 
@@ -36,4 +37,4 @@ int main(void)
 	fflush(NULL);
 
 	hal_loop();
-}
+}	/* main() */

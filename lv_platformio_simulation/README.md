@@ -11,13 +11,13 @@ Every further suggestion is appreciated!
 - [x] Keys color
 - [x] Volume regulation (knob)
 - [x] Key names
-- [ ] First pressed key doesn't emit any sound (BUG)
+- [x] First pressed key doesn't emit any sound (BUG)
 - [ ] ADSR control
 - [ ] Selectable waveform
 - [ ] Further effects .... WIP
 
 
-This is the current graphics!
+This is the current graphics!  
 ![Keyboard on simulator](./img/graphics_status.png)
 
 

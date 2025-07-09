@@ -7,8 +7,11 @@
 
 static void on_button_cb(lv_event_t * p_event);
 static void on_knob_cb(lv_event_t * p_event);
+static void on_drop_cb(lv_event_t * p_event);
 
-static int32_t g_volume = 100;
+static uint8_t * gp_volume = NULL;
+static uint8_t * gp_q_key_press = NULL;
+static const char g_waveform_names[] = "Sine\n" "Triangle\n" "Square";
 
 static void
 on_button_cb (lv_event_t * p_event)
@@ -27,10 +30,12 @@ on_button_cb (lv_event_t * p_event)
             lv_log("PRESSED %f\n", key_freq);
             sprintf(cmd_array,
                     "play -V1 -r 48000 -n synth sin %f trim 0 0.5 vol %f&",
-                    key_freq, (double) g_volume / 100);
+                    key_freq,
+                    (double) *gp_volume / 100.0 / (double) (*gp_q_key_press + 1));
             lv_log("## cmd: %s", cmd_array);
             system(cmd_array);
             fflush(NULL);
+            ++(*gp_q_key_press);
         }
         break;
 
@@ -39,6 +44,7 @@ on_button_cb (lv_event_t * p_event)
             lv_log("RELEASED\n");
             system("pkill play");
             fflush(NULL);
+            --(*gp_q_key_press);
         }
         break;
 
@@ -59,17 +65,22 @@ on_knob_cb (lv_event_t * p_event)
             lv_obj_t * p_knob_label =
                                 (lv_obj_t *) lv_event_get_user_data(p_event);
 
-            g_volume = lv_arc_get_value(p_knob);
+            *gp_volume = lv_arc_get_value(p_knob);
 
-            lv_label_set_text_fmt(p_knob_label, "%d%%", g_volume);
+            lv_label_set_text_fmt(p_knob_label, "%d%%", *gp_volume);
         }
         break;
 
         default:
         break;
     }
-    
 }   /* on_knob_cb() */
+
+static void
+on_drop_cb (lv_event_t * p_event)
+{
+
+}   /* on_drop_cb() */
 
 uint8_t
 init_instrument (instrument_t * p_instr)
@@ -84,7 +95,7 @@ void
 create_instrument (instrument_t * p_instr)
 {
     int32_t idx = 0;
-    key_number_t * p_key_num = NULL;
+    static key_number_t * p_key_num = NULL;
     static lv_coord_t col_dsc[INSTR_NUM_KEY] = {0};
     static lv_style_t main_style{0};
     static lv_style_t upper_style{0};
@@ -93,6 +104,13 @@ create_instrument (instrument_t * p_instr)
     const char key_name_list[INSTR_NUM_KEY][3] = {"C", "C#", "D", "D#", "E",
                                                   "F", "F#", "G", "G#", "A",
                                                   "A#", "B", "C"};
+
+    gp_volume = &p_instr->prop.volume;
+    gp_q_key_press = &p_instr->q_key_press;
+
+    // Workaround to make the first played note emitting sound.
+    //
+    system("play");
 
     for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
     {
@@ -112,8 +130,14 @@ create_instrument (instrument_t * p_instr)
 
     // ROW 0
     //
-    lv_obj_t * p_first_row = lv_obj_create(p_screen);
-    lv_obj_set_grid_cell(p_first_row, LV_GRID_ALIGN_STRETCH, 0, INSTR_NUM_KEY,
+    lv_obj_t * p_waveform_ctrl = lv_obj_create(p_screen);
+    lv_obj_set_grid_cell(p_waveform_ctrl, LV_GRID_ALIGN_STRETCH, 0,
+                         INSTR_NUM_KEY / 2,
+                         LV_GRID_ALIGN_STRETCH, 0, 2);
+
+    lv_obj_t * p_volume_ctrl = lv_obj_create(p_screen);
+    lv_obj_set_grid_cell(p_volume_ctrl, LV_GRID_ALIGN_STRETCH, INSTR_NUM_KEY / 2,
+                         INSTR_NUM_KEY / 2 + 1,
                          LV_GRID_ALIGN_STRETCH, 0, 2);
 
     // Style for Row 0.
@@ -124,21 +148,23 @@ create_instrument (instrument_t * p_instr)
 
     lv_style_init(&upper_style);
     lv_style_set_bg_color(&upper_style, lv_palette_main(LV_PALETTE_GREY));
-    lv_obj_add_style(p_first_row, &upper_style, LV_PART_MAIN);
+    lv_obj_add_style(p_waveform_ctrl, &upper_style, LV_PART_MAIN);
+    lv_obj_add_style(p_volume_ctrl, &upper_style, LV_PART_MAIN);
 
-    lv_style_init(&white_key_style);
-    lv_style_set_bg_color(&white_key_style, {0xFF, 0xFF, 0xFF});
-
-    lv_style_init(&black_key_style);
-    lv_style_set_bg_color(&black_key_style, lv_palette_main(LV_PALETTE_NONE));
+    // Waveform selector inside Row 0.
+    //
+    lv_obj_t * p_waveform_list = lv_dropdown_create(p_waveform_ctrl);
+    lv_dropdown_set_options(p_waveform_list, g_waveform_names);
+    lv_obj_add_event_cb(p_waveform_list, on_drop_cb, LV_EVENT_VALUE_CHANGED,
+                        &p_instr->prop.waveform);
 
     // Knob inside Row 0.
     //
-    lv_obj_t * p_knob_label = lv_label_create(p_first_row);
+    lv_obj_t * p_knob_label = lv_label_create(p_volume_ctrl);
     lv_label_set_text(p_knob_label, "100%");
     lv_obj_set_align(p_knob_label, LV_ALIGN_CENTER);
     
-    lv_obj_t * p_knob = lv_arc_create(p_first_row);
+    lv_obj_t * p_knob = lv_arc_create(p_volume_ctrl);
     lv_obj_center(p_knob);
     lv_arc_set_range(p_knob, 0, 100);
     lv_arc_set_value(p_knob, 100);
@@ -148,6 +174,12 @@ create_instrument (instrument_t * p_instr)
     // ROW 1
     //
     lv_obj_t * p_btn = NULL;
+
+    lv_style_init(&white_key_style);
+    lv_style_set_bg_color(&white_key_style, {0xFF, 0xFF, 0xFF});
+
+    lv_style_init(&black_key_style);
+    lv_style_set_bg_color(&black_key_style, lv_palette_main(LV_PALETTE_NONE));
 
     for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
     {
@@ -162,9 +194,9 @@ create_instrument (instrument_t * p_instr)
         lv_obj_set_align(p_key_label, LV_ALIGN_CENTER);
 
         lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_PRESSED,
-                            p_key_num);
+                            &p_instr->key[idx]);
         lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_RELEASED,
-                            p_key_num);
+                            &p_instr->key[idx]);
         
         // Style for Row 1.
         //

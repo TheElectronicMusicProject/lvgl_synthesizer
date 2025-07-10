@@ -38,3 +38,6 @@ main (void)
 
 	hal_loop();
 }	/* main() */
+
+
+/*** End of file ***/

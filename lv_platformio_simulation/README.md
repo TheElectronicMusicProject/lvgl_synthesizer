@@ -13,7 +13,7 @@ Every further suggestion is appreciated!
 - [x] Key names
 - [x] First pressed key doesn't emit any sound (BUG)
 - [ ] ADSR control
-- [ ] Selectable waveform
+- [x] Selectable waveform
 - [ ] Further effects .... WIP
 
 

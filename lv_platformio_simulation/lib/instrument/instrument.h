@@ -7,6 +7,13 @@
 #   define SCREEN_WIDTH     (320)
 #   define SCREEN_HEIGHT    (240)
 
+typedef enum waveform_list_t
+{
+    SINE_WAVE = 0,
+    TRIANGLE_WAVE,
+    SQUARE_WAVE,
+} waveform_list_t;
+
 typedef struct key_number_t
 {
     uint8_t num;
@@ -16,7 +23,7 @@ typedef struct key_number_t
 typedef struct properties_t
 {
     uint8_t volume;
-    uint8_t waveform;
+    waveform_list_t waveform;
 } properties_t;
 
 typedef struct instrument_t
@@ -30,3 +37,6 @@ void create_instrument(instrument_t * p_instr);
 uint8_t init_instrument(instrument_t * p_instr);
 
 #endif /* INSTRUMENT_H */
+
+
+/*** End of file ***/

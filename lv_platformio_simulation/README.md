@@ -11,7 +11,7 @@ Every further suggestion is appreciated!
 - [x] Keys color
 - [x] Volume regulation (knob)
 - [x] Key names
-- [x] First pressed key doesn't emit any sound (BUG)
+- [ ] First pressed key doesn't emit any sound (BUG)
 - [ ] ADSR control
 - [x] Selectable waveform
 - [ ] Further effects .... WIP

@@ -1,21 +1,32 @@
 /**
-	******************************************************************************
-	* @file    main.c
-	* @author  Ac6
-	* @version V1.0
-	* @date    01-December-2013
-	* @brief   Default main function.
-	******************************************************************************
-*/
+ * @file    main.c
+ * 
+ * @brief   Main function with instrument instantiation.
+ * 
+ * @author  Filippo Graziani (circuitry.passion@gmail.com)
+ * 
+ * @date    15/07/2025
+ * 
+ * @par     Description
+ * Init of LVGL and HAL, then init of instrument and creation of its graphics.
+ */
 
-
-#include "lvgl.h"
+/******************************************************************************
+ *                              INCLUDE STATEMENS                             *
+ * The headers for each grouping should be sorted alphabetically:             *
+ * 1 - The paired header file                                                 *
+ * 2 - Other headers from your project                                        *
+ * 3 - 3rd party library headers                                              *
+ * 4 - Standard library headers                                               *
+ ******************************************************************************/
+#include "instrument.h"
+ #include "lvgl.h"
 #include "app_hal.h"
 #include <stdio.h>
-#include "instrument.h"
 
-#include "demos/lv_demos.h"
-
+/******************************************************************************
+ *                           PUBLIC FUNCTION BODIES                           *
+ ******************************************************************************/
 int
 main (void)
 {

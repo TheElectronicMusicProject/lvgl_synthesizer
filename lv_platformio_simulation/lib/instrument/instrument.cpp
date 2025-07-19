@@ -21,6 +21,7 @@
  * 4 - Standard library headers                                               *
  ******************************************************************************/
 #include "instrument.h"
+#include "utilities.h"
 #include "lvgl.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,6 +46,7 @@ static waveform_list_t * gp_sel_wave = NULL;
 static void on_button_cb(lv_event_t * p_event);
 static void on_knob_cb(lv_event_t * p_event);
 static void on_drop_cb(lv_event_t * p_event);
+static void on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data);
 
 /******************************************************************************
  *                           PUBLIC FUNCTION BODIES                           *
@@ -90,9 +92,11 @@ create_instrument (instrument_t * p_instr)
         gp_q_key_press = &p_instr->q_key_press;
         gp_sel_wave = &p_instr->prop.waveform;
 
+#ifdef __linux__
         // Workaround to make the first played note emitting sound.
         //
         system("play");
+#endif /* __linux__ */
 
         for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
         {
@@ -186,6 +190,14 @@ create_instrument (instrument_t * p_instr)
         lv_style_set_bg_color(&black_key_style,
                               lv_palette_main(LV_PALETTE_NONE));
 
+#if 0
+        lv_indev_t * p_key_input = lv_indev_create();
+        lv_indev_set_type(p_key_input, LV_INDEV_TYPE_KEYPAD);
+        lv_indev_set_read_cb(p_key_input, on_key_press_cb);
+        lv_group_t * p_grp = lv_group_create();
+        lv_group_set_default(p_grp);
+#endif
+
         for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
         {
             // Keyboard made of buttons.
@@ -201,6 +213,11 @@ create_instrument (instrument_t * p_instr)
                                 &p_instr->key[idx]);
             lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_RELEASED,
                                 &p_instr->key[idx]);
+#if 0
+            lv_group_add_obj(p_grp, p_btn);
+            lv_indev_set_group(p_key_input, p_grp);
+            lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_CLICKED, p_grp);
+#endif
             
             // Style for Row 1.
             //
@@ -246,7 +263,7 @@ on_button_cb (lv_event_t * p_event)
             case LV_EVENT_PRESSED:
             {
                 lv_log("PRESSED %f\n", key_freq);
-
+#ifdef __linux__
                 switch (*gp_sel_wave)
                 {
                     default:
@@ -277,6 +294,8 @@ on_button_cb (lv_event_t * p_event)
                         (double) (*gp_q_key_press + 1));
                 lv_log("## cmd: %s", cmd_array);
                 system(cmd_array);
+#endif /* __linux__ */
+
                 fflush(NULL);
                 ++(*gp_q_key_press);
             }
@@ -285,7 +304,10 @@ on_button_cb (lv_event_t * p_event)
             case LV_EVENT_RELEASED:
             {
                 lv_log("RELEASED\n");
+#ifdef __linux__
                 system("pkill play");
+#endif /* __linux__ */
+
                 fflush(NULL);
                 --(*gp_q_key_press);
             }
@@ -364,6 +386,42 @@ on_drop_cb (lv_event_t * p_event)
         }
     }
 }   /* on_drop_cb() */
+
+static void
+on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
+{
+#ifdef __linux__ 
+    // Check if pressing a button.
+    //
+    int32_t key_code = get_key();
+
+    if (0 != key_code)
+    {
+        lv_log("Key code pressed is %d\n", key_code);
+        fflush(stdout);
+
+        // We want to check if we're pressing ENTER.
+        //
+        if (10 == key_code)
+        {
+            // We need to tell the key has been pressed.
+            //
+            p_data->state = LV_INDEV_STATE_PRESSED;
+            p_data->key = LV_KEY_ENTER;
+        }
+        else
+        {
+            p_data->state = LV_INDEV_STATE_RELEASED;
+        }
+    }
+    else
+    {
+        // Key hasn't been pressed.
+        //
+        p_data->state = LV_INDEV_STATE_RELEASED;
+    }
+#endif
+}   /* on_key_press_cb() */
 
 
 /*** End of file ***/

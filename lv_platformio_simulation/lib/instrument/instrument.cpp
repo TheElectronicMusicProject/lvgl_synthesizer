@@ -46,7 +46,11 @@ static waveform_list_t * gp_sel_wave = NULL;
 static void on_button_cb(lv_event_t * p_event);
 static void on_knob_cb(lv_event_t * p_event);
 static void on_drop_cb(lv_event_t * p_event);
-static void on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data);
+
+#if KEY_SIMULATION
+static void sim_on_key_press_cb(lv_indev_t * p_indev, lv_indev_data_t * p_data);
+static void sim_on_button_pressed_cb(lv_event_t * p_event);
+#endif   /* KEY_SIMULATION */
 
 /******************************************************************************
  *                           PUBLIC FUNCTION BODIES                           *
@@ -190,13 +194,13 @@ create_instrument (instrument_t * p_instr)
         lv_style_set_bg_color(&black_key_style,
                               lv_palette_main(LV_PALETTE_NONE));
 
-#if 0
+#if KEY_SIMULATION
         lv_indev_t * p_key_input = lv_indev_create();
         lv_indev_set_type(p_key_input, LV_INDEV_TYPE_KEYPAD);
-        lv_indev_set_read_cb(p_key_input, on_key_press_cb);
+        lv_indev_set_read_cb(p_key_input, sim_on_key_press_cb);
         lv_group_t * p_grp = lv_group_create();
         lv_group_set_default(p_grp);
-#endif
+#endif  /* KEY_SIMULATION */
 
         for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
         {
@@ -213,11 +217,12 @@ create_instrument (instrument_t * p_instr)
                                 &p_instr->key[idx]);
             lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_RELEASED,
                                 &p_instr->key[idx]);
-#if 0
+#if KEY_SIMULATION
             lv_group_add_obj(p_grp, p_btn);
             lv_indev_set_group(p_key_input, p_grp);
-            lv_obj_add_event_cb(p_btn, on_button_cb, LV_EVENT_CLICKED, p_grp);
-#endif
+            lv_obj_add_event_cb(p_btn, sim_on_button_pressed_cb,
+                                LV_EVENT_CLICKED, &p_instr->key[idx]);
+#endif  /* KEY_SIMULATION */
             
             // Style for Row 1.
             //
@@ -239,7 +244,6 @@ create_instrument (instrument_t * p_instr)
         }
     }
 }   /* create_instrument() */
-
 
 
 /******************************************************************************
@@ -310,6 +314,12 @@ on_button_cb (lv_event_t * p_event)
 
                 fflush(NULL);
                 --(*gp_q_key_press);
+            }
+            break;
+
+            case LV_EVENT_CLICKED:
+            {
+                
             }
             break;
 
@@ -387,8 +397,10 @@ on_drop_cb (lv_event_t * p_event)
     }
 }   /* on_drop_cb() */
 
+#if KEY_SIMULATION
+
 static void
-on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
+sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
 {
 #ifdef __linux__ 
     // Check if pressing a button.
@@ -400,18 +412,121 @@ on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
         lv_log("Key code pressed is %d\n", key_code);
         fflush(stdout);
 
+        p_data->state = LV_INDEV_STATE_PRESSED;
+
         // We want to check if we're pressing ENTER.
         //
-        if (10 == key_code)
+        switch (key_code)
         {
-            // We need to tell the key has been pressed.
+            // A key.
             //
-            p_data->state = LV_INDEV_STATE_PRESSED;
-            p_data->key = LV_KEY_ENTER;
-        }
-        else
-        {
-            p_data->state = LV_INDEV_STATE_RELEASED;
+            case 97:
+            {
+
+            }
+            break;
+
+            // W key.
+            //
+            case 119:
+            {
+
+            }
+            break;
+
+            // S key.
+            //
+            case 115:
+            {
+                
+            }
+            break;
+
+            // E key.
+            //
+            case 101:
+            {
+
+            }
+            break;
+
+            // D key.
+            //
+            case 100:
+            {
+                
+            }
+            break;
+
+            // F key.
+            //
+            case 102:
+            {
+                
+            }
+            break;
+
+            // T key.
+            //
+            case 116:
+            {
+
+            }
+            break;
+
+            // G key.
+            //
+            case 103:
+            {
+                
+            }
+            break;
+
+            // Y key.
+            //
+            case 121:
+            {
+                
+            }
+            break;
+
+            // H key.
+            //
+            case 104:
+            {
+
+            }
+            break;
+
+            // U key.
+            //
+            case 117:
+            {
+                
+            }
+            break;
+
+            // J key.
+            //
+            case 106:
+            {
+                
+            }
+            break;
+
+            // K key.
+            //
+            case 107:
+            {
+                
+            }
+            break;
+
+            default:
+            {
+                p_data->state = LV_INDEV_STATE_RELEASED;
+            }
+            break;
         }
     }
     else
@@ -421,7 +536,89 @@ on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
         p_data->state = LV_INDEV_STATE_RELEASED;
     }
 #endif
-}   /* on_key_press_cb() */
+}   /* sim_on_key_press_cb() */
+
+static void
+sim_on_button_pressed_cb (lv_event_t * p_event)
+{
+    if (NULL != p_event)
+    {
+        lv_obj_t * p_btn = lv_event_get_target_obj(p_event);
+        key_number_t * p_active_key =
+                            (key_number_t *) lv_event_get_user_data(p_event);
+        char cmd_array[80] = {0};
+        char cmd_wave[10] = {0};
+        double key_freq = pow(2.0, ((double) p_active_key->num - 9.0) / 12.0)
+                                   * 440.0;   /* Align to middle C */
+        
+        switch (p_event->code)
+        {
+            case LV_EVENT_PRESSED:
+            {
+                lv_log("PRESSED %f\n", key_freq);
+#ifdef __linux__
+                switch (*gp_sel_wave)
+                {
+                    default:
+                        /* Fall through */
+                    case SINE_WAVE:
+                    {
+                        strncpy(cmd_wave, "sin", 10);
+                    }
+                    break;
+
+                    case TRIANGLE_WAVE:
+                    {
+                        strncpy(cmd_wave, "triangle", 10);
+                    }
+                    break;
+
+                    case SQUARE_WAVE:
+                    {
+                        strncpy(cmd_wave, "square", 10);
+                    }
+                    break;
+                }
+                
+                sprintf(cmd_array,
+                        "play -V1 -r 48000 -n synth %s %f trim 0 0.5 vol %f&",
+                        cmd_wave, key_freq,
+                        (double) *gp_volume / 100.0 /
+                        (double) (*gp_q_key_press + 1));
+                lv_log("## cmd: %s", cmd_array);
+                system(cmd_array);
+#endif /* __linux__ */
+
+                fflush(NULL);
+                ++(*gp_q_key_press);
+            }
+            break;
+
+            case LV_EVENT_RELEASED:
+            {
+                lv_log("RELEASED\n");
+#ifdef __linux__
+                system("pkill play");
+#endif /* __linux__ */
+
+                fflush(NULL);
+                --(*gp_q_key_press);
+            }
+            break;
+
+            case LV_EVENT_CLICKED:
+            {
+                
+            }
+            break;
+
+            default:
+            break;
+        }
+    }    
+}   /* sim_on_button_pressed_cb() */
+
+#endif  /* KEY_SIMULATION */
 
 
 /*** End of file ***/

@@ -39,6 +39,9 @@ static const char g_waveform_names[] = "Sine\n" "Triangle\n" "Square";
 static uint8_t * gp_volume = NULL;
 static uint8_t * gp_q_key_press = NULL;
 static waveform_list_t * gp_sel_wave = NULL;
+#if KEY_SIMULATION
+static uint8_t g_active_key_num = 0;
+#endif   /* KEY_SIMULATION */
 
 /******************************************************************************
  *                        PRIVATE FUNCTIONS PROTOTYPES                        *
@@ -422,7 +425,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 97:
             {
-
+                g_active_key_num = 0;
             }
             break;
 
@@ -430,7 +433,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 119:
             {
-
+                g_active_key_num = 1;
             }
             break;
 
@@ -438,7 +441,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 115:
             {
-                
+                g_active_key_num = 2;
             }
             break;
 
@@ -446,7 +449,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 101:
             {
-
+                g_active_key_num = 3;
             }
             break;
 
@@ -454,7 +457,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 100:
             {
-                
+                g_active_key_num = 4;
             }
             break;
 
@@ -462,7 +465,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 102:
             {
-                
+                g_active_key_num = 5;
             }
             break;
 
@@ -470,7 +473,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 116:
             {
-
+                g_active_key_num = 6;
             }
             break;
 
@@ -478,7 +481,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 103:
             {
-                
+                g_active_key_num = 7;
             }
             break;
 
@@ -486,7 +489,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 121:
             {
-                
+                g_active_key_num = 8;
             }
             break;
 
@@ -494,7 +497,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 104:
             {
-
+                g_active_key_num = 9;
             }
             break;
 
@@ -502,7 +505,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 117:
             {
-                
+                g_active_key_num = 10;
             }
             break;
 
@@ -510,7 +513,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 106:
             {
-                
+                g_active_key_num = 11;
             }
             break;
 
@@ -518,7 +521,7 @@ sim_on_key_press_cb (lv_indev_t * p_indev, lv_indev_data_t * p_data)
             //
             case 107:
             {
-                
+                g_active_key_num = 12;
             }
             break;
 
@@ -548,11 +551,18 @@ sim_on_button_pressed_cb (lv_event_t * p_event)
                             (key_number_t *) lv_event_get_user_data(p_event);
         char cmd_array[80] = {0};
         char cmd_wave[10] = {0};
+#if KEY_SIMULATION
+        double key_freq = pow(2.0, ((double) g_active_key_num - 9.0) / 12.0)
+                                   * 440.0;   /* Align to middle C */
+#else
         double key_freq = pow(2.0, ((double) p_active_key->num - 9.0) / 12.0)
                                    * 440.0;   /* Align to middle C */
+#endif  /* KEY_SIMULATION */
         
         switch (p_event->code)
         {
+            case LV_EVENT_CLICKED:
+                /* Fall through */
             case LV_EVENT_PRESSED:
             {
                 lv_log("PRESSED %f\n", key_freq);
@@ -603,12 +613,6 @@ sim_on_button_pressed_cb (lv_event_t * p_event)
 
                 fflush(NULL);
                 --(*gp_q_key_press);
-            }
-            break;
-
-            case LV_EVENT_CLICKED:
-            {
-                
             }
             break;
 

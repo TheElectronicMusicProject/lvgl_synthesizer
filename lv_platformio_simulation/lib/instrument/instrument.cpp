@@ -90,9 +90,11 @@ create_instrument (instrument_t * p_instr)
         gp_q_key_press = &p_instr->q_key_press;
         gp_sel_wave = &p_instr->prop.waveform;
 
+#ifdef __linux__
         // Workaround to make the first played note emitting sound.
         //
         system("play");
+#endif /* __linux__ */
 
         for (idx = 0; idx < INSTR_NUM_KEY; ++idx)
         {
@@ -246,7 +248,7 @@ on_button_cb (lv_event_t * p_event)
             case LV_EVENT_PRESSED:
             {
                 lv_log("PRESSED %f\n", key_freq);
-
+#ifdef __linux__
                 switch (*gp_sel_wave)
                 {
                     default:
@@ -277,6 +279,8 @@ on_button_cb (lv_event_t * p_event)
                         (double) (*gp_q_key_press + 1));
                 lv_log("## cmd: %s", cmd_array);
                 system(cmd_array);
+#endif /* __linux__ */
+
                 fflush(NULL);
                 ++(*gp_q_key_press);
             }
@@ -285,7 +289,10 @@ on_button_cb (lv_event_t * p_event)
             case LV_EVENT_RELEASED:
             {
                 lv_log("RELEASED\n");
+#ifdef __linux__
                 system("pkill play");
+#endif /* __linux__ */
+
                 fflush(NULL);
                 --(*gp_q_key_press);
             }

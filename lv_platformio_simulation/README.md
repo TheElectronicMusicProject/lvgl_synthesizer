@@ -14,6 +14,7 @@ Every further suggestion is appreciated!
 - [ ] First pressed key doesn't emit any sound (BUG)
 - [ ] ADSR control
 - [x] Selectable waveform
+- [ ] Multi-key support (emulated)
 - [ ] Further effects .... WIP
 
 
